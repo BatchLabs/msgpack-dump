@@ -15,14 +15,22 @@ bool msgpack_data_reached_eof(msgpack_data *data)
     return data->position == data->buffer.length;
 }
 
-void msgpack_data_read(msgpack_data *backing_data, void* out_data, size_t count) {
-    size_t new_end_position = backing_data->position + count;
+void msgpack_data_read(msgpack_data *backing_data, void* out_data, size_t length) {
+    size_t new_end_position = backing_data->position + length;
     if (new_end_position > backing_data->buffer.length) {
         perror("Msgpack library tried to read more than the message's size. Message is probably malformed.\n");
         exit(4);
     }
-    memcpy(out_data, backing_data->buffer.data + backing_data->position, count);
+    memcpy(out_data, backing_data->buffer.data + backing_data->position, length);
     backing_data->position = new_end_position;
+}
+
+void msgpack_data_skip(msgpack_data *backing_data, size_t length) {
+    backing_data->position += length;
+    if (backing_data->position > backing_data->buffer.length) {
+        perror("Msgpack library tried to read more than the message's size. Message is probably malformed.\n");
+        exit(4);
+    }
 }
 
 static bool msgpack_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
@@ -31,12 +39,7 @@ static bool msgpack_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
 }
 
 static bool msgpack_skipper(cmp_ctx_t *ctx, size_t count) {
-    msgpack_data* data = ctx->buf;
-    data->position += count;
-    if (data->position > data->buffer.length) {
-        perror("Msgpack library tried to read more than the message's size. Message is probably malformed.\n");
-        exit(4);
-    }
+    msgpack_data_skip((msgpack_data*)ctx->buf, count);
     return true;
 }
 
@@ -82,10 +85,16 @@ void dump_msgpack_object(msgpack_data *raw_data, cmp_object_t* object, bool prin
             printf("Boolean : %d", object->as.boolean);
             break;
         case CMP_TYPE_BIN8:
+            printf("Data length : %d (8)", object->as.bin_size);
+            msgpack_data_skip(raw_data, object->as.bin_size);
             break;
         case CMP_TYPE_BIN16:
+            printf("Data length : %d (16)", object->as.bin_size);
+            msgpack_data_skip(raw_data, object->as.bin_size);
             break;
         case CMP_TYPE_BIN32:
+            printf("Data length : %d (32)", object->as.bin_size);
+            msgpack_data_skip(raw_data, object->as.bin_size);
             break;
         case CMP_TYPE_EXT8:
         case CMP_TYPE_EXT16:
