@@ -177,8 +177,11 @@ void dump_msgpack_object(msgpack_data *raw_data, cmp_object_t* object, bool prin
 void dump_msgpack_string(msgpack_data *raw_data, cmp_object_t* object, uint32_t length, bool print_strings) {
     char *str = malloc(length);
     msgpack_data_read(raw_data, str, length);
+
     if (print_strings) {
-        printf("\n\"%s\"", str);
+        fprintf(stdout, "\n\"");
+        fwrite(str, 1, length, stdout);
+        fprintf(stdout, "\"");
     }
 
     free(str);
