@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include "dump.h"
 #include "cmp.h"
 
