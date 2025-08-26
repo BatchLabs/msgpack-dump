@@ -119,7 +119,7 @@ void dump_msgpack_object(msgpack_data *raw_data, cmp_object_t* object, bool prin
             printf("Integer : %ju (unsigned, 32)", (uintmax_t)object->as.u32);
             break;
         case CMP_TYPE_UINT64:
-            printf("Integer : %ju (unsigned, 64)", (uintmax_t)object->as.u8);
+            printf("Integer : %ju (unsigned, 64)", (uintmax_t)object->as.u64);
             break;
         case CMP_TYPE_SINT8:
             printf("Integer : %jd (signed, 8)", (intmax_t)object->as.s8);
